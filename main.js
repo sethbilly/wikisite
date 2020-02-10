@@ -1,21 +1,24 @@
 const app = document.getElementById('root');
-const container = document.createElement('div');
+const container = document.getElementById('container');
 
-app.appendChild(container);
 
 
 const errorMessage = document.getElementById('errorMsg');
 var fetch = document.getElementById('fetch');
 
+// Create a request variable and assign a new XMLHttpRequest object to it
 var request = new XMLHttpRequest()
 
 fetch.onclick = function() {
-    var title = document.getElementById('title').value;
-    console.log(title);
-    errorMessage.style.display = "none";
 
-    // Create a request variable and assign a new XMLHttpRequest object to it
-    
+    // Remove all child nodes
+    container.innerHTML = "";
+
+    // Get article title
+    var title = document.getElementById('title').value;
+
+    // Do not show error message
+    errorMessage.style.display = "none";
 
     // Open a new connection to the API url
     // Using the wikipedia rest api for getting mobile sections of an article
@@ -34,17 +37,21 @@ fetch.onclick = function() {
             var counter = 0;
             var decimal = 0;
             var results = [];
+            var subs = []
             for(var i = 0; i < arrElement.length; i++) {
                 if(arrElement[i].toclevel === 1) {
                     decimal = 0;
                     counter++;
                     results.push(arrElement[i]);
+                    subs = [];
                 }else {
-                    results[counter -1][`${counter}.${decimal + 1}`] = arrElement[i];
+                    subs.push(arrElement[i])
+                    results[counter - 1]["items"] = subs;
                     decimal++
                 }
             }
 
+            // Reformat JSON data to represent desired heading and subheadings 
             var finalResults = [];
             results.forEach((element, index) => {
                 var obj = {};
@@ -53,19 +60,48 @@ fetch.onclick = function() {
             })
             console.log(finalResults);
             
-            // data.remaining.sections.forEach(result => {
-            //     var toclevel = result.toclevel;
-            //     var line = result.line;
-            //     if(toclevel == 1) {
-            //         toclevel += 1;
-            //     }
-            //     const a = document.createElement('a')
-            //     a.href = "";
-            //     a.setAttribute('style', 'text-decoration:none;');
-            //     a.setAttribute('target', '_blank');
-            //     a.textContent =  toclevel + "."+ line;
-            //     container.appendChild(a);
-            // })
+            var ul = document.createElement('ol');
+
+            finalResults.forEach((value, index) => {
+
+                var li = document.createElement('li');
+                var topLink = document.createElement('a');
+                topLink.setAttribute('target', '_blank')
+                topLink.href = '';
+                topLink.style.textDecoration = "none";
+                topLink.innerHTML = value[index + 1].line;
+
+                var sp = document.createElement('span');
+                sp.appendChild(topLink);
+                if(value[index + 1].items) {
+                    var inside = document.createElement('ul');
+                    inside.style.listStyle = "none none";
+
+                    var subItems = value[index + 1];
+                    subItems.items.forEach((subItem, idx) => {
+
+                        var subLi = document.createElement('li');
+                        var subLink = document.createElement('a');
+                        subLink.style.textDecoration = "none";
+                        subLink.target = "_blank"
+                        subLink.href = "";
+
+                        subLink.innerHTML = `${index + 1}.${idx + 1}` + subItem.line;
+
+                        var subSp = document.createElement('span')
+                        subSp.appendChild(subLink);
+                        subLi.appendChild(subSp);
+                        inside.appendChild(subLi);
+                
+                    });
+                    sp.appendChild(inside);
+                }
+                li.appendChild(sp);
+                ul.appendChild(li);
+            })
+            container.appendChild(ul);
+
+            
         }else {
             //create error message
             errorMessage.textContent = 'Sorry, Page Not Found'
@@ -85,13 +121,15 @@ language.onchange = function() {
    
     console.log('selected lang = ' + chosenLang);
     // Stringify the html container content 
-    var html = JSON.stringify({"html": container.textContent});
+    var html = JSON.stringify({"html": container.innerHTML});
     console.log(html);
     var url = 'https://wikimedia.org/api/rest_v1/transform/html/from/en/to/'+chosenLang;
     request.open('POST', encodeURI(url), true);
 
     request.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
-    
+ 
+    // Send JSON data to REST server
+    request.send(html); 
 
     request.onload = function() {
         var data = JSON.parse(this.response);
@@ -100,7 +138,10 @@ language.onchange = function() {
             var contents = data.contents;
 
             // Convert contents to HTML
-            var newContent = document.createElement(contents)
+            var newContent = document.createElement('div')
+            newContent.innerHTML = contents;
+            //  Remove child node and replace with translated content
+            container.removeChild(container.childNodes[0]);
             container.appendChild(newContent);
             
 
@@ -110,6 +151,4 @@ language.onchange = function() {
         }
     }
 
-    // Send JSON data to REST server
-    request.send(html); 
 }
