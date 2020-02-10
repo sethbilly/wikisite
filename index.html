@@ -5,10 +5,37 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Document</title>
-    <link rel="stylesheet" href="/css/styles.css">
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div id="root"></div>
-    <script src="/js/main.js"></script>
+    
+    <div id="errorMsg" style="color: red;"></div>
+    <br />
+    <div id="root">
+        <div>
+            <form action="" method="GET">
+                <label for="">Article Title</label>
+                <input type="text" name="title" id="title">
+                <br />
+                <label for="">Language</label>
+                <select name="searchLanguage" id="language">
+                    <option value="en" lang="en" selected="selected">English</option>
+                    <option value="es" lang="es">Espanol</option>
+                    <option value="da" lang="da">Dansk</option>
+                    <option value="de" lang="de">Deutsch</option>
+                    <option value="et" lang="et">Eesti</option>
+                    <!-- rtl languages-->
+                    <option value="ar" lang="ar">العربية</option>
+                    <option value="fa" lang="fa">فارسی</option>
+                    <option value="he" lang="he">עברית</option>
+                    <option value="azb" lang="azb">تۆرکجه</option>
+                    <option value="ur" lang="ur">اردو</option>
+                </select>
+                <br />
+                <input type="button" value="Fetch" id="fetch">
+            </form>
+        </div>
+    </div>
+    <script src="main.js"></script>
 </body>
 </html>
